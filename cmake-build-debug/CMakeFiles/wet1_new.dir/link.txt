@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/wet1_new.dir/main.cpp.o CMakeFiles/wet1_new.dir/BinarySearchTree.cpp.o CMakeFiles/wet1_new.dir/Company.cpp.o CMakeFiles/wet1_new.dir/Employee.cpp.o CMakeFiles/wet1_new.dir/Library1.cpp.o CMakeFiles/wet1_new.dir/Hitechs.cpp.o  -o wet1_new 
