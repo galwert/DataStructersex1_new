@@ -293,7 +293,7 @@ namespace Ehsan {
     template<class T,class S>
     BinarySearchTree<T,S>::~BinarySearchTree() {
 
-        //treeDelete(this->root);
+        treeDelete(this->root);
     }
 
     template<class T,class S>
@@ -589,7 +589,7 @@ namespace Ehsan {
         T total_data[this_nodes + other_nodes];
         merge(this_data,this_keys,this_nodes,other_data,other_keys,other_nodes,total_data,total_keys);
         treeDelete(other.root);
-        treeDelete(this->root);
+        //treeDelete(this->root);
         BSTNode<T,S> *newtree = createEmptyFullTree(total_keys,total_data,0,this_nodes + other_nodes-1);
         other.root = newtree;
         delete index;

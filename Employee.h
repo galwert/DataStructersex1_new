@@ -66,14 +66,6 @@ namespace Ehsan {
         Employee(const Employee& copy) = default;
         Employee& operator=(const Employee& copy) = default;
         ~Employee() = default;
-        void GetEmployeeInfo(int *EmployerID, int *Salary, int *Grade)
-        {
-            *EmployerID=this->company_id;
-            *Salary=this->employee_salary;
-            *Grade=this->rank;
-
-        }
-
     };
 
 

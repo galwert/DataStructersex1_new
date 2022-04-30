@@ -278,7 +278,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         int* index = new int();
         if (CompanyID < 0 )
         {
-            if (this->num_of_employees <= 0)
+            if (this->num_of_employees == 0)
             {
                 *(NumOfEmployees) = 0;
                 *Employees = nullptr;
@@ -303,6 +303,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
             if (group_to_find_node == nullptr )
             {
                 //a group with this identifier doesn't exist
+                delete index;
                 return FAILURE;
             }
             std::shared_ptr<Company> group_to_find = group_to_find_node->data;
@@ -510,8 +511,12 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         return SUCCESS;
     }
 
-    void Hitechs::DeleteHitechs() {
-        this->companies.treeDelete((this->companies.root));
+    void Hitechs::DeleteHitechs()
+    {
+        //this->companies.treeDelete((this->companies.root));
+        //this->employees_by_salary.treeDelete(employees_by_salary.root);
+        //this->employees.treeDelete(employees.root);
+        //this->companies_with_employees.treeDelete((this->companies_with_employees.root));
         delete this;
     }
 

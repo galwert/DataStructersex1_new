@@ -23,7 +23,7 @@ namespace Ehsan {
 
 
         explicit Company(int company_id, int company_value);
-        ~Company()=default;
+        ~Company();
 
         void HireEmployee(const std::shared_ptr<Employee>& employee);
         void RemoveEmployee(int employee_salary,int employee_id);
