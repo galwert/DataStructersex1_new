@@ -187,15 +187,13 @@ namespace Ehsan {
 		{
 			return FAILURE;
 		}
-
 		companies.find(CompanyID)->data->IncreaseCompanyValue(ValueIncrease);
-
 		return SUCCESS;
 	}
 
 	StatusType Hitechs::PromoteEmployee(int EmployeeID, int SalaryIncrease, int BumpGrade)
 	{
-		if (EmployeeID <= 0 || SalaryIncrease == 0)
+		if (EmployeeID <= 0 || SalaryIncrease <= 0)
 		{
 			return INVALID_INPUT;
 		}
@@ -247,7 +245,6 @@ namespace Ehsan {
 		{
 			return FAILURE;
 		}
-        //employee->company_id=NewCompanyID;
 		RemoveEmployee(EmployeeID);
 
 		return AddEmployee(EmployeeID, NewCompanyID, employee->employee_salary, employee->rank);
@@ -383,7 +380,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         {
             return;
         }
-        if(node->key>MinEmployeeID&&node->key<MaxEmployeeId)//in range, we increase total counter and check to maybe increase other counter
+        if(node->key>=MinEmployeeID&&node->key<=MaxEmployeeId)//in range, we increase total counter and check to maybe increase other counter
         {
             (*TotalNumOfEmployees)++;
             if(node->data->rank>=MinGrade&&node->data->employee_salary>=MinSalary)
@@ -392,13 +389,12 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
             }
             FindInSubtree(node->right,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);//checking for both sons, could be more node in range in subtree
             FindInSubtree(node->left,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
-            return;
         }
-        else if (node->key<MaxEmployeeId)
+        else if (node->key<=MaxEmployeeId)
         {
             FindInSubtree(node->right,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
         }
-        else if (node->key>MinEmployeeID)
+        else if (node->key>=MinEmployeeID)
         {
             FindInSubtree(node->left,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
         }
@@ -411,7 +407,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
             return;
         }
             (*TotalNumOfEmployees)++;
-            if(node->data->rank>MinGrade&&node->data->employee_salary>MinSalary)
+            if(node->data->rank>=MinGrade&&node->data->employee_salary>=MinSalary)
             {
                 (*NumOfEmployees)++;
             }
@@ -425,38 +421,25 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         {
             return INVALID_INPUT;
         }
-        BSTNode<std::shared_ptr<Employee>,int> *curr1,*curr2,*root;
+        BSTNode<std::shared_ptr<Employee>,int> *root;
         if(CompanyID<0)
         {
-            curr1=this->employees.root;
+            root=this->employees.root;
         }
         else
         {
             BSTNode<std::shared_ptr<Company>,int> *company_to_find_node = this->companies.find(CompanyID);
-            if (company_to_find_node == nullptr)
+            if (company_to_find_node == nullptr||company_to_find_node->data->num_of_employee==0)
             {
                 //a group with this identifier doesn't exist
                 return FAILURE;
             }
-            curr1=company_to_find_node->data->employees_by_id.root;
+            root=company_to_find_node->data->employees_by_id.root;
         }
-        curr2=curr1;
-        root=curr1;
-        while(curr1!= nullptr&&curr1->key>MinEmployeeID)
-        {
-            curr1=curr1->left;
-        }
-        if(curr1!= nullptr) {
-            FindInSubtree(curr1, MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
-        }
-        while(curr2!= nullptr&&curr2->key<MaxEmployeeId)
-        {
-            curr2=curr2->right;
-        }
-        if(curr2!= nullptr) {
-            FindInSubtree(curr2, MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
-        }
-        CountInSubtree(root,curr1,curr2, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        *TotalNumOfEmployees=0;
+        *NumOfEmployees=0;
+        FindInSubtree(root,MinEmployeeID,MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        return SUCCESS;
     }
 
 
@@ -495,7 +478,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
 	}
 
     StatusType Hitechs::AcquireCompany(int AcquirerID, int TargetID, double Factor) {
-        if (AcquirerID<=0||TargetID<=0||AcquirerID==TargetID||Factor<1)
+        if (AcquirerID<=0||TargetID<=0||AcquirerID==TargetID||Factor<1.0)
         {
             return INVALID_INPUT;
         }
@@ -503,31 +486,27 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         {
             return FAILURE;
         }
-        std::shared_ptr<Company> acquirerCompany = companies.find(AcquirerID)->data;
+        std::shared_ptr<Company> acquirerCompany = companies.find(AcquirerID)->data;//buyer
         std::shared_ptr<Company> targetCompany = companies.find(TargetID)->data;
 
-        if (acquirerCompany->company_value < 10 * targetCompany->company_value)
+        if (acquirerCompany->company_value <  targetCompany->company_value*10)
         {
             return FAILURE;
         }
-        if(targetCompany->num_of_employee == 0&&acquirerCompany->num_of_employee ==0)
-        {
-            return SUCCESS;
-        }
-        if (acquirerCompany->num_of_employee >0)
+        if (targetCompany->num_of_employee >0)
         {
             num_of_companies_with_employees--;
-            companies_with_employees.remove(acquirerCompany->company_id);
+            companies_with_employees.remove(targetCompany->company_id);
         }
-        acquirerCompany->AcquireCompany(targetCompany, Factor);
-        if (targetCompany->num_of_employee == 0)
+
+        if (acquirerCompany->num_of_employee == 0)
         {
             num_of_companies_with_employees++;
-            companies_with_employees.insert(targetCompany->company_id,targetCompany);
+            companies_with_employees.insert(acquirerCompany->company_id,acquirerCompany);
         }
+        targetCompany->AcquireCompany(acquirerCompany, Factor);
 
-
-        this->companies.remove(AcquirerID);
+        this->companies.remove(TargetID);
         return SUCCESS;
     }
 
