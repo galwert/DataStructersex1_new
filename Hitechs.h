@@ -11,14 +11,13 @@ namespace Ehsan {
     public:
         int num_of_employees;
         int num_of_companies_with_employees;
-        //BinarySearchTree<std::shared_ptr<Employee>,int> players_by_id;
         BinarySearchTree<std::shared_ptr<Employee>,IDSalary> employees_by_salary;
         BinarySearchTree<std::shared_ptr<Company>,int> companies;
         BinarySearchTree<std::shared_ptr<Company>,int> companies_with_employees;
         BinarySearchTree<std::shared_ptr<Employee>, int> employees;
         std::shared_ptr<Employee> highest_salary;
         Hitechs();
-        ~Hitechs();
+        ~Hitechs()=default;
         StatusType AddCompany(int CompanyID, int Value);
 
         StatusType AddEmployee(int EmployeeID, int CompanyID, int Salary, int Grade);
@@ -48,6 +47,10 @@ namespace Ehsan {
         StatusType GetNumEmployeesMatching(int CompanyID, int MinEmployeeID, int MaxEmployeeId,
                                            int MinSalary, int MinGrade, int *TotalNumOfEmployees, int *NumOfEmployees);
         void DeleteHitechs();
+
+        void fillArrayWithIdsInDescendingOrder(int *array,int *index,int max, BSTNode<std::shared_ptr<Employee>,IDSalary> *node);
+
+        void fillArrayWithHighestSalaryIdsInAscendingOrder(int *array,int *index,int max, BSTNode<std::shared_ptr<Company>,int> *node);
     };
 }
 

@@ -11,7 +11,6 @@
 #include <ctgmath>
 #include <iostream>
 #include <memory>
-#include "player.h"
 namespace Ehsan {
 
 
@@ -229,14 +228,14 @@ namespace Ehsan {
     BinarySearchTree<T,S>::BinarySearchTree():root(nullptr) {
     }
 
-    template<class T,class S>
-    BinarySearchTree<T,S> &BinarySearchTree<T,S>::operator=(const BinarySearchTree &tree) {
-        if (this == &tree)
-            return *this;
-        treeDelete(this->root);
-        copyTreeInternal(this, tree);
-        return *this;
-    }
+//    template<class T,class S>
+//    BinarySearchTree<T,S> &BinarySearchTree<T,S>::operator=(const BinarySearchTree &tree) {
+//        if (this == &tree)
+//            return *this;
+//        treeDelete(this->root);
+//        copyTreeInternal(this, tree);
+//        return *this;
+//    }
 
     template<class T,class S>
     BSTNode<T,S> *BSTNode<T,S>::roll() {
@@ -519,7 +518,7 @@ namespace Ehsan {
             }
 
         }
-        if (root != nullptr)//necessary? - saleh
+        if (root != nullptr)
         {
             clearLeaves(root->right,height-1,numberofleaves);
             clearLeaves(root->left,height-1,numberofleaves);

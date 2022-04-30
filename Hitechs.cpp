@@ -1,24 +1,18 @@
-#include "Hitechs.h";
+#include "Hitechs.h"
+
+#include <memory>
 
 namespace Ehsan {
 
-	Hitechs::Hitechs()
-	{
-		num_of_employees = 0;
-		num_of_companies_with_employees = 0;
-
-		BinarySearchTree<std::shared_ptr<Employee>, int> employees = BinarySearchTree<std::shared_ptr<Employee>, int>();
-		BinarySearchTree<std::shared_ptr<Employee>, IDSalary> employees_by_salary = BinarySearchTree<std::shared_ptr<Employee>, IDSalary>();
-		BinarySearchTree<std::shared_ptr<Company>, int> companies = BinarySearchTree<std::shared_ptr<Company>, int>();
-		BinarySearchTree<std::shared_ptr<Company>, int> companies_with_employees = BinarySearchTree<std::shared_ptr<Company>, int>();
-
-		std::shared_ptr<Employee> highest_salary = nullptr;
-	}
-
-
-	Hitechs::~Hitechs() 
-	{
-		DeleteHitechs();
+	Hitechs::Hitechs():
+		num_of_employees(0),
+		num_of_companies_with_employees(0),
+		 employees(),
+		employees_by_salary(),
+		 companies(),
+		 companies_with_employees()
+        {
+         highest_salary = nullptr;
 	}
 
 	StatusType Hitechs::AddCompany(int CompanyID, int Value)
@@ -33,7 +27,7 @@ namespace Ehsan {
 			return FAILURE;
 		}
 
-		std::shared_ptr<Company> company = std::shared_ptr<Company>(new Company(CompanyID, Value));
+		std::shared_ptr<Company> company = std::make_shared<Company>(CompanyID, Value);
 		companies.insert(CompanyID, company);
 
 		return SUCCESS;
@@ -47,14 +41,14 @@ namespace Ehsan {
 		}
 
 		IDSalary idSalary = IDSalary(Salary, EmployeeID);
-		if (companies.find(CompanyID) == nullptr || employees_by_salary.find(idSalary) != nullptr)
+		if (companies.find(CompanyID) == nullptr || employees.find(EmployeeID) != nullptr)
 		{
 			return FAILURE;
 		}
 
 		std::shared_ptr<Company> company = companies.find(CompanyID)->data;
-		std::shared_ptr<Employee> newEmployee = std::shared_ptr<Employee>(new Employee(EmployeeID, CompanyID, Salary, Grade));
-		
+		std::shared_ptr<Employee> newEmployee = std::make_shared<Employee>(EmployeeID, CompanyID, Salary, Grade);
+
 
 		if (company->num_of_employee == 0)  //Checks if the company has no employees
 		{
@@ -63,11 +57,13 @@ namespace Ehsan {
 		}
 
 		num_of_employees++;		//Updates the trees
+        company->num_of_employee++;
 		company->HireEmployee(newEmployee);
 		employees.insert(EmployeeID, newEmployee);
 		employees_by_salary.insert(idSalary, newEmployee);
 
-		if (newEmployee->employee_salary > highest_salary->employee_salary || (newEmployee->employee_salary == highest_salary->employee_salary && newEmployee->employee_id < highest_salary->employee_id)) //New highest earner
+		if (num_of_employees==1||newEmployee->employee_salary > highest_salary->employee_salary ||
+        (newEmployee->employee_salary == highest_salary->employee_salary && newEmployee->employee_id < highest_salary->employee_id)) //New highest earner
 		{
 			highest_salary = newEmployee;
 		}
@@ -103,10 +99,11 @@ namespace Ehsan {
 		}
 
 		company->num_of_employee--;
-		company->employees_by_rank.remove(idSalary);
+        this->num_of_employees--;
+        company->RemoveEmployee(idSalary.salary,idSalary.ID);
 		employees.remove(EmployeeID);     //Removing from employees trees
 		employees_by_salary.remove(idSalary);
-		
+
 		//if the company has no employees
 		if (company->num_of_employee == 0)
 		{
@@ -135,6 +132,7 @@ namespace Ehsan {
 		}
 
 		companies.remove(CompanyID);
+        return SUCCESS;
 	}
 
 	StatusType Hitechs::GetCompanyInfo(int CompanyID, int* Value, int* NumEmployees)
@@ -208,13 +206,31 @@ namespace Ehsan {
 		}
 
 		std::shared_ptr<Employee> employee = employees.find(EmployeeID)->data;
-
-		companies.find(employee->company_id)->data->IncreaseSalary(employee->employee_salary, EmployeeID, SalaryIncrease, BumpGrade);
-
+        if (companies.find(employee->company_id) == nullptr)
+        {
+            return FAILURE;
+        }
+        int newsalary = SalaryIncrease + (employee->employee_salary);
+		companies.find(employee->company_id)->data->IncreaseSalary(employee->employee_salary, EmployeeID, SalaryIncrease);
+        this->employees_by_salary.remove(IDSalary(employee->employee_salary,EmployeeID));
+        this->employees_by_salary.insert(IDSalary( newsalary,EmployeeID),employee);
+        employee->employee_salary=newsalary;
+        if( newsalary > (this->highest_salary->employee_salary) )
+        {
+            this->highest_salary = employee;
+        }
+        if( newsalary == this->highest_salary->employee_salary && (employee->employee_id) < (this->highest_salary->employee_id) )
+        {
+            this->highest_salary = employee;
+        }
+        if(BumpGrade>0)
+        {
+            employee->rank++;
+        }
 		return SUCCESS;
 	}
 
-	StatusType Hitechs::HireEmployee(int EmployeeID, int NewCompanyID) 
+	StatusType Hitechs::HireEmployee(int EmployeeID, int NewCompanyID)
 	{
 		if (EmployeeID <= 0 || NewCompanyID <= 0)
 		{
@@ -226,46 +242,223 @@ namespace Ehsan {
 			return FAILURE;
 		}
 
-		Employee employee = *(employees.find(EmployeeID)->data);
-		if (employee.company_id == NewCompanyID)
+		std::shared_ptr<Employee> employee = employees.find(EmployeeID)->data;
+		if (employee->company_id == NewCompanyID)
 		{
 			return FAILURE;
 		}
-
+        //employee->company_id=NewCompanyID;
 		RemoveEmployee(EmployeeID);
 
-		return AddEmployee(EmployeeID, NewCompanyID, employee.employee_salary, employee.rank);
+		return AddEmployee(EmployeeID, NewCompanyID, employee->employee_salary, employee->rank);
 	}
 
-	StatusType Hitechs::AcquireCompany(int AcquirerID, int TargetID, double Factor)
-	{
-		if (AcquirerID <= 0 || TargetID <= 0 || Factor < 1.00 || AcquirerID == TargetID)
-		{
-			return INVALID_INPUT;
-		}
+    void Hitechs::fillArrayWithIdsInDescendingOrder(int *array,int *index,int max, BSTNode<std::shared_ptr<Employee>,IDSalary> *node)
+    {
 
-		if (companies.find(AcquirerID) == nullptr || companies.find(TargetID) == nullptr)
-		{
-			return FAILURE;
-		}
+        if (node == nullptr||(*index)==max)
+        {
+            return;
+        }
+        fillArrayWithIdsInDescendingOrder(array,index,max,node->right);
+        if((*index)==max)
+        {
+            return;
+        }
+        array[*index] = (node->data->employee_id);
+        (*index)++;
+        fillArrayWithIdsInDescendingOrder(array,index,max,node->left);
+    }
 
-		std::shared_ptr<Company> acquirerCompany = companies.find(AcquirerID)->data;
-		std::shared_ptr<Company> targetCompany = companies.find(TargetID)->data;
+StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employees, int *NumOfEmployees) {
 
-		if (acquirerCompany->company_value < 10 * targetCompany->company_value)
-		{
-			return FAILURE;
-		}
+    if( CompanyID == 0 || Employees == nullptr || NumOfEmployees == nullptr )
+    {
+        return INVALID_INPUT;
+    }
 
-		if (targetCompany->num_of_employee > 0 && acquirerCompany->num_of_employee != 0)
-		{
-			num_of_companies_with_employees--;
-		}
+    try{
+        int* index = new int();
+        if (CompanyID < 0 )
+        {
+            if (this->num_of_employees <= 0)
+            {
+                *(NumOfEmployees) = 0;
+                *Employees = nullptr;
+            }
+            else
+            {
+                *(NumOfEmployees) = this->num_of_employees;
+                int* myarray=((int*)malloc(sizeof(int)* (this->num_of_employees)));
+                if(myarray== nullptr)
+                {
+                    throw std::bad_alloc();
+                }
+                fillArrayWithIdsInDescendingOrder(myarray,index,this->num_of_employees,this->employees_by_salary.root);
+                *Employees=myarray;
+            }
+            delete index;
+            return SUCCESS;
+        }
+        else
+        {
+            BSTNode<std::shared_ptr<Company>,int> *group_to_find_node = this->companies.find(CompanyID);//find should be in BST
+            if (group_to_find_node == nullptr )
+            {
+                //a group with this identifier doesn't exist
+                return FAILURE;
+            }
+            std::shared_ptr<Company> group_to_find = group_to_find_node->data;
+            if (group_to_find->num_of_employee <= 0)
+            {
+                *(NumOfEmployees) = 0;
+                *Employees = nullptr;
+            }
+            else
+            {
+                *(NumOfEmployees) = group_to_find->num_of_employee;
+                int* myarray=(int*)malloc(sizeof(int)* (*NumOfEmployees));
+                if(myarray== nullptr)
+                {
+                    throw std::bad_alloc();
+                }
+                fillArrayWithIdsInDescendingOrder(myarray,index,group_to_find->num_of_employee,group_to_find->employees_by_salary.root);
+                *Employees=myarray;
+            }
+        }
+        delete index;
+    }catch(const std::bad_alloc& e){
+        return ALLOCATION_ERROR;
+    }
+    return SUCCESS;
+}
 
-		acquirerCompany->AcquireCompany(targetCompany, Factor);
+    StatusType Hitechs::GetHighestEarnerInEachCompany(int NumOfCompanies, int **Employees) {
+        if ( (Employees == nullptr) || (NumOfCompanies < 1) )
+        {
+            return INVALID_INPUT;
+        }
 
-		return SUCCESS;
-	}
+        if ( NumOfCompanies > (this->num_of_companies_with_employees) )
+        {
+            return FAILURE;
+        }
+        try{
+            int *index = new int();
+            int* myarray=(int*)malloc( sizeof(int) * (NumOfCompanies));
+            if(myarray== nullptr)
+            {
+                delete index;
+                throw std::bad_alloc();
+            }
+            fillArrayWithHighestSalaryIdsInAscendingOrder(myarray,index,NumOfCompanies,this->companies_with_employees.root);
+            *Employees=myarray;
+            delete index;
+        }catch(const std::bad_alloc& e){
+            return ALLOCATION_ERROR;
+        }
+        return SUCCESS;
+    }
+
+    void Hitechs::fillArrayWithHighestSalaryIdsInAscendingOrder(int *array, int *index, int max,
+                                                           BSTNode<std::shared_ptr<Company>, int> *node)
+                                                           {
+        if (node == nullptr||(*index)==max)
+        {
+            return;
+        }
+        fillArrayWithHighestSalaryIdsInAscendingOrder(array,index,max,node->left);
+        if((*index)==max)
+        {
+            return;
+        }
+        array[*index] = (node->data->highest_salary->employee_id);
+        (*index)++;
+        fillArrayWithHighestSalaryIdsInAscendingOrder(array,index,max,node->right);
+
+    }
+    void FindInSubtree(BSTNode<std::shared_ptr<Employee>,int> *node,int MinEmployeeID,int MaxEmployeeId,int MinSalary, int MinGrade, int *TotalNumOfEmployees, int *NumOfEmployees )
+    {
+        if(node== nullptr)
+        {
+            return;
+        }
+        if(node->key>MinEmployeeID&&node->key<MaxEmployeeId)//in range, we increase total counter and check to maybe increase other counter
+        {
+            (*TotalNumOfEmployees)++;
+            if(node->data->rank>=MinGrade&&node->data->employee_salary>=MinSalary)
+            {
+                (*NumOfEmployees)++;
+            }
+            FindInSubtree(node->right,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);//checking for both sons, could be more node in range in subtree
+            FindInSubtree(node->left,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+            return;
+        }
+        else if (node->key<MaxEmployeeId)
+        {
+            FindInSubtree(node->right,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        }
+        else if (node->key>MinEmployeeID)
+        {
+            FindInSubtree(node->left,MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        }
+    }
+    void CountInSubtree(BSTNode<std::shared_ptr<Employee>,int> *node,BSTNode<std::shared_ptr<Employee>,int> *no_entry1,BSTNode<std::shared_ptr<Employee>,int> *no_entry2
+                       ,int MinSalary, int MinGrade, int *TotalNumOfEmployees, int *NumOfEmployees )
+    {
+        if(node== nullptr||node==no_entry1||node==no_entry2)
+        {
+            return;
+        }
+            (*TotalNumOfEmployees)++;
+            if(node->data->rank>MinGrade&&node->data->employee_salary>MinSalary)
+            {
+                (*NumOfEmployees)++;
+            }
+        CountInSubtree(node->right,no_entry1,  no_entry2, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        CountInSubtree(node->left,no_entry1,  no_entry2, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+    }
+    StatusType Hitechs::GetNumEmployeesMatching(int CompanyID, int MinEmployeeID,
+                                                int MaxEmployeeId, int MinSalary, int MinGrade, int *TotalNumOfEmployees, int *NumOfEmployees) {
+        if (  CompanyID==0|| MinEmployeeID<0|| MaxEmployeeId<0|| MinSalary<0||MinGrade<0||
+        TotalNumOfEmployees==nullptr|| NumOfEmployees==nullptr||MinEmployeeID>MaxEmployeeId )
+        {
+            return INVALID_INPUT;
+        }
+        BSTNode<std::shared_ptr<Employee>,int> *curr1,*curr2,*root;
+        if(CompanyID<0)
+        {
+            curr1=this->employees.root;
+        }
+        else
+        {
+            BSTNode<std::shared_ptr<Company>,int> *company_to_find_node = this->companies.find(CompanyID);
+            if (company_to_find_node == nullptr)
+            {
+                //a group with this identifier doesn't exist
+                return FAILURE;
+            }
+            curr1=company_to_find_node->data->employees_by_id.root;
+        }
+        curr2=curr1;
+        root=curr1;
+        while(curr1!= nullptr&&curr1->key>MinEmployeeID)
+        {
+            curr1=curr1->left;
+        }
+        if(curr1!= nullptr) {
+            FindInSubtree(curr1, MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        }
+        while(curr2!= nullptr&&curr2->key<MaxEmployeeId)
+        {
+            curr2=curr2->right;
+        }
+        if(curr2!= nullptr) {
+            FindInSubtree(curr2, MinEmployeeID,  MaxEmployeeId, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+        }
+        CountInSubtree(root,curr1,curr2, MinSalary,  MinGrade, TotalNumOfEmployees, NumOfEmployees);
+    }
+
 
 	StatusType Hitechs::GetHighestEarner(int CompanyID, int* EmployeeID)
 	{
@@ -301,52 +494,47 @@ namespace Ehsan {
 		return SUCCESS;
 	}
 
-	StatusType Hitechs::GetAllEmployeesBySalary(int CompanyID, int** Employees, int* NumOfEmployees)
-	{
-		if (CompanyID == 0 || Employees == nullptr || NumOfEmployees == nullptr)
-		{
-			return INVALID_INPUT;
-		}
+    StatusType Hitechs::AcquireCompany(int AcquirerID, int TargetID, double Factor) {
+        if (AcquirerID<=0||TargetID<=0||AcquirerID==TargetID||Factor<1)
+        {
+            return INVALID_INPUT;
+        }
+        if(companies.find(AcquirerID) == nullptr || companies.find(TargetID) == nullptr)
+        {
+            return FAILURE;
+        }
+        std::shared_ptr<Company> acquirerCompany = companies.find(AcquirerID)->data;
+        std::shared_ptr<Company> targetCompany = companies.find(TargetID)->data;
 
-		if (CompanyID > 0 && companies.find(CompanyID) == nullptr)
-		{
-			return FAILURE;
-		}
+        if (acquirerCompany->company_value < 10 * targetCompany->company_value)
+        {
+            return FAILURE;
+        }
+        if(targetCompany->num_of_employee == 0&&acquirerCompany->num_of_employee ==0)
+        {
+            return SUCCESS;
+        }
+        if (acquirerCompany->num_of_employee >0)
+        {
+            num_of_companies_with_employees--;
+            companies_with_employees.remove(acquirerCompany->company_id);
+        }
+        acquirerCompany->AcquireCompany(targetCompany, Factor);
+        if (targetCompany->num_of_employee == 0)
+        {
+            num_of_companies_with_employees++;
+            companies_with_employees.insert(targetCompany->company_id,targetCompany);
+        }
 
-		if (CompanyID > 0 && companies.find(CompanyID)->data->num_of_employee == 0)
-		{
-			return FAILURE;
-		}
 
-		if (CompanyID < 0 && num_of_employees == 0)
-		{
-			return FAILURE;
-		}
+        this->companies.remove(AcquirerID);
+        return SUCCESS;
+    }
 
-		if (CompanyID < 0)
-		{
-			//TO DO: INORDER SEARCH (ALL EMPLOYEES)
-		}
-		else
-		{
-			//TO DO: INORDER SEARCH (ALL EMPLOYEES IN COMPANY)
-		}
-	}
+    void Hitechs::DeleteHitechs() {
+        this->companies.treeDelete((this->companies.root));
+        delete this;
+    }
 
-	StatusType Hitechs::GetHighestEarnerInEachCompany(int NumOfCompanies, int** Employees)
-	{
-
-	}
-
-	StatusType Hitechs::GetNumEmployeesMatching(int CompanyID, int MinEmployeeID, int MaxEmployeeId,
-		int MinSalary, int MinGrade, int* TotalNumOfEmployees, int* NumOfEmployees)
-	{
-
-	}
-
-	void Hitechs::DeleteHitechs()
-	{
-
-	}
 
 }

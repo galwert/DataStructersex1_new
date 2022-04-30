@@ -8,14 +8,15 @@ namespace Ehsan
     Company::Company(int company_id, int company_value):
             company_id(company_id),
             num_of_employee(0),
-            employees_by_rank(),
+            employees_by_salary(),
+            employees_by_id(),
             highest_salary(nullptr),
             company_value(company_value)
     {}
 
     void Company::HireEmployee(const std::shared_ptr<Employee>& employee) {
-        this->employees_by_rank.insert(IDSalary(employee->employee_salary, employee->employee_id), employee);
-        (this->num_of_employee)++;
+        this->employees_by_salary.insert(IDSalary(employee->employee_salary, employee->employee_id), employee);
+        this->employees_by_id.insert(employee->employee_id, employee);
         if ((this->highest_salary) == nullptr) {
             this->highest_salary = employee;
             return;
@@ -31,23 +32,19 @@ namespace Ehsan
 
         }
     }
-    void Company::GetCompanyInfo(int *Value, int *NumEmployees)
-    {
-        *Value=this->company_value;
-        *NumEmployees=this->num_of_employee;
-    }
     void Company::IncreaseCompanyValue(int ValueIncrease)
     {
         this->company_value+=ValueIncrease;
     }
     void Company::RemoveEmployee(int employee_salary,int employee_id)
     {
-        (this->num_of_employee)--;
-        this->employees_by_rank.remove(IDSalary(employee_salary,employee_id));
+        //(this->num_of_employee)--;
+        this->employees_by_salary.remove(IDSalary(employee_salary,employee_id));
+        this->employees_by_id.remove(employee_id);
         if( (this->highest_salary->employee_id) == employee_id)
         {
-            BSTNode<std::shared_ptr<Employee>,IDSalary> *maxnode = this->employees_by_rank.getMaxNode();
-            if (maxnode != nullptr)
+            BSTNode<std::shared_ptr<Employee>,IDSalary> *maxnode = this->employees_by_salary.getMaxNode();
+            if(maxnode!= nullptr)
             {
                 this->highest_salary = maxnode->data;
             }
@@ -55,6 +52,7 @@ namespace Ehsan
             {
                 this->highest_salary = nullptr;
             }
+
         }
 
     }
@@ -86,18 +84,18 @@ namespace Ehsan
     {
         this->UpdateHighestSalaryBeforeGroupReplacement(replacement);
         (replacement->num_of_employee) += (this->num_of_employee);
-        updatePlayersGroupID(this->employees_by_rank.root,replacement->company_id);
-        this->employees_by_rank.uniteTrees(replacement->employees_by_rank);
+        updatePlayersGroupID(this->employees_by_salary.root,replacement->company_id);
+        this->employees_by_salary.uniteTrees(replacement->employees_by_salary);
+        this->employees_by_id.uniteTrees(replacement->employees_by_id);
         replacement->company_value=(int)((this->company_value+replacement->company_value)*factor);
     }
 
-    void Company::IncreaseSalary (int employee_salary, int employee_id, int SalaryIncrease, int BumpGrade)
+    void Company::IncreaseSalary (int employee_salary, int employee_id, int SalaryIncrease)
     {
-        std::shared_ptr<Employee> employee = this->employees_by_rank.find(IDSalary(employee_salary,employee_id))->data;//this player should definitely exist
+        std::shared_ptr<Employee> employee = this->employees_by_salary.find(IDSalary(employee_salary,employee_id))->data;
         int newsalary = SalaryIncrease + (employee->employee_salary);
-        this->employees_by_rank.remove(IDSalary(employee->employee_salary,employee_id));
-        this->employees_by_rank.insert(IDSalary( newsalary,employee_salary),employee);
-        // player->playerlevel = newlevel; this addition is done in SquidGame
+        this->employees_by_salary.remove(IDSalary(employee->employee_salary,employee_id));
+        this->employees_by_salary.insert(IDSalary( newsalary,employee_id),employee);
         if( newsalary > (this->highest_salary->employee_salary) )
         {
             this->highest_salary = employee;
@@ -108,15 +106,6 @@ namespace Ehsan
         }
     }
 
-    void Company::GetHighestSalary(int *EmployeeID)
-    {
-        (*EmployeeID) = this->highest_salary->employee_id;
-    }
-    void Company::GetAllEmployeesBySalary (int **Employees_array, int *numOfEmployees)
-    {
-        *Employees_array = (int*)malloc(sizeof(int) *(*numOfEmployees));
-        fillArrayWithIdsInAscendingOrder(*Employees_array,numOfEmployees, this->employees_by_rank.root );
-    }
 
     void Company::fillArrayWithIdsInAscendingOrder(int *array,int* numOfPlayers, BSTNode<std::shared_ptr<Employee>,IDSalary> *node)
     {
