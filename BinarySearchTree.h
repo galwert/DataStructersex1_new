@@ -571,11 +571,11 @@ namespace Ehsan {
         {
             if(this_nodes==1)
             {
-                other.root=this->root;
+                other.root=new BSTNode<T,S>(this->root->key,this->root->data);
+                return;
             }
-            return;
-        }
 
+        }
         int *index = new int();
         S this_keys [this_nodes];
         T this_data [this_nodes];

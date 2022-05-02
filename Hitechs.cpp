@@ -88,22 +88,24 @@ namespace Ehsan {
 
 		std::shared_ptr<Company> company = companies.find(employeeToRemove->company_id)->data;
 
-		if (employeeToRemove == company->highest_salary)  //Checks if the employee earns the most in the company
-		{
-			company->UpdateHighestSalaryBeforeGroupReplacement(company);
-		}
 
-		if (employeeToRemove == highest_salary)    //Checks if the employee earns the most
-		{
-			highest_salary = employees.find(EmployeeID)->parent->data;
-		}
+
 
 		company->num_of_employee--;
         this->num_of_employees--;
         company->RemoveEmployee(idSalary.salary,idSalary.ID);
+
 		employees.remove(EmployeeID);     //Removing from employees trees
 		employees_by_salary.remove(idSalary);
+        if ((this->highest_salary->employee_id) == EmployeeID) {
+            BSTNode<std::shared_ptr<Employee>, IDSalary> *maxnode = this->employees_by_salary.getMaxNode();
+            if (maxnode != nullptr) {
+                this->highest_salary = maxnode->data;
+            } else {
+                this->highest_salary = nullptr;
+            }
 
+        }
 		//if the company has no employees
 		if (company->num_of_employee == 0)
 		{
@@ -209,7 +211,8 @@ namespace Ehsan {
             return FAILURE;
         }
         int newsalary = SalaryIncrease + (employee->employee_salary);
-		companies.find(employee->company_id)->data->IncreaseSalary(employee->employee_salary, EmployeeID, SalaryIncrease);
+        std::shared_ptr<Company> company = companies.find(employee->company_id)->data;
+		company->IncreaseSalary(employee->employee_salary, EmployeeID, SalaryIncrease);
         this->employees_by_salary.remove(IDSalary(employee->employee_salary,EmployeeID));
         this->employees_by_salary.insert(IDSalary( newsalary,EmployeeID),employee);
         employee->employee_salary=newsalary;
@@ -246,8 +249,7 @@ namespace Ehsan {
 			return FAILURE;
 		}
 		RemoveEmployee(EmployeeID);
-
-		return AddEmployee(EmployeeID, NewCompanyID, employee->employee_salary, employee->rank);
+        return AddEmployee(EmployeeID, NewCompanyID, employee->employee_salary, employee->rank);
 	}
 
     void Hitechs::fillArrayWithIdsInDescendingOrder(int *array,int *index,int max, BSTNode<std::shared_ptr<Employee>,IDSalary> *node)
@@ -282,6 +284,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
             {
                 *(NumOfEmployees) = 0;
                 *Employees = nullptr;
+                return FAILURE;
             }
             else
             {
@@ -311,6 +314,7 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
             {
                 *(NumOfEmployees) = 0;
                 *Employees = nullptr;
+                return FAILURE;
             }
             else
             {
@@ -494,17 +498,22 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         {
             return FAILURE;
         }
-        if (targetCompany->num_of_employee >0)
+
+
+        if(acquirerCompany->num_of_employee==0)
+        {
+            if(targetCompany->num_of_employee>0)
+            {
+                num_of_companies_with_employees++;
+                this->companies_with_employees.insert(AcquirerID,acquirerCompany);
+            }
+        }
+        if (targetCompany->num_of_employee > 0 )
         {
             num_of_companies_with_employees--;
             companies_with_employees.remove(targetCompany->company_id);
         }
 
-        if (acquirerCompany->num_of_employee == 0)
-        {
-            num_of_companies_with_employees++;
-            companies_with_employees.insert(acquirerCompany->company_id,acquirerCompany);
-        }
         targetCompany->AcquireCompany(acquirerCompany, Factor);
 
         this->companies.remove(TargetID);
@@ -513,10 +522,6 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
 
     void Hitechs::DeleteHitechs()
     {
-        //this->companies.treeDelete((this->companies.root));
-        //this->employees_by_salary.treeDelete(employees_by_salary.root);
-        //this->employees.treeDelete(employees.root);
-        //this->companies_with_employees.treeDelete((this->companies_with_employees.root));
         delete this;
     }
 

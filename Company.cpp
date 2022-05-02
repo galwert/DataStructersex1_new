@@ -36,7 +36,6 @@ namespace Ehsan {
     }
 
     void Company::RemoveEmployee(int employee_salary, int employee_id) {
-        //(this->num_of_employee)--;
         this->employees_by_salary.remove(IDSalary(employee_salary, employee_id));
         this->employees_by_id.remove(employee_id);
         if ((this->highest_salary->employee_id) == employee_id) {
@@ -70,12 +69,13 @@ namespace Ehsan {
     }
 
     void Company::AcquireCompany(std::shared_ptr<Company> &replacement, double factor) {
+        replacement->company_value = (int) ((this->company_value + replacement->company_value) * factor);
         this->UpdateHighestSalaryBeforeGroupReplacement(replacement);
         (replacement->num_of_employee) += (this->num_of_employee);
         updatePlayersGroupID(this->employees_by_salary.root, replacement->company_id);
         this->employees_by_salary.uniteTrees(replacement->employees_by_salary);
         this->employees_by_id.uniteTrees(replacement->employees_by_id);
-        replacement->company_value = (int) ((this->company_value + replacement->company_value) * factor);
+
     }
 
     void Company::IncreaseSalary(int employee_salary, int employee_id, int SalaryIncrease) {
