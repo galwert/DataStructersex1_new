@@ -1,0 +1,88 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/BinarySearchTree.cpp
+BinarySearchTree.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/BinarySearchTree.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/BinarySearchTree.h
+cstdlib
+-
+algorithm
+-
+ctgmath
+-
+iostream
+-
+memory
+-
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Company.cpp
+Company.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Company.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Company.h
+Employee.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Employee.h
+BinarySearchTree.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/BinarySearchTree.h
+memory
+-
+iostream
+-
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Employee.cpp
+Employee.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Employee.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Employee.h
+BinarySearchTree.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/BinarySearchTree.h
+memory
+-
+algorithm
+-
+iostream
+-
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Hitechs.cpp
+Hitechs.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Hitechs.h
+memory
+-
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Hitechs.h
+Library1.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Library1.h
+Company.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Company.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Library1.cpp
+Hitechs.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Hitechs.h
+Library1.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Library1.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/Library1.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/library1.h
+
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/main.cpp
+assert.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+library1.h
+/mnt/c/Users/galwe/OneDrive/Desktop/technion/סמסטר ד/מבני נתונים/wet1_new/library1.h
+iostream
+-
+

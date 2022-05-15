@@ -577,21 +577,27 @@ namespace Ehsan {
 
         }
         int *index = new int();
-        S this_keys [this_nodes];
-        T this_data [this_nodes];
+        S* this_keys=new  S [this_nodes];
+        T* this_data= new T [this_nodes];
         treeToArray(this_keys,this_data,index,this->root);
         (*index) = 0;
-        S other_keys [other_nodes];
-        T other_data [other_nodes];
+        S * other_keys=new S [other_nodes];
+        T *other_data= new T [other_nodes];
         treeToArray(other_keys,other_data,index,other.root);
         (*index) = 0;
-        S total_keys [this_nodes + other_nodes];
-        T total_data[this_nodes + other_nodes];
+        S *total_keys=new S [this_nodes + other_nodes];
+        T * total_data=new T [this_nodes + other_nodes];
         merge(this_data,this_keys,this_nodes,other_data,other_keys,other_nodes,total_data,total_keys);
         treeDelete(other.root);
         //treeDelete(this->root);
         BSTNode<T,S> *newtree = createEmptyFullTree(total_keys,total_data,0,this_nodes + other_nodes-1);
         other.root = newtree;
+        delete[] this_keys;
+        delete[] this_data;
+        delete[] other_keys;
+        delete[] other_data;
+        delete[] total_keys;
+        delete[] total_data;
         delete index;
     }
 }

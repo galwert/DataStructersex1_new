@@ -110,6 +110,7 @@ namespace Ehsan {
 		if (company->num_of_employee == 0)
 		{
 			companies_with_employees.remove(company->company_id);
+            this->num_of_companies_with_employees--;
 		}
 
 		return SUCCESS;
@@ -429,6 +430,10 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         BSTNode<std::shared_ptr<Employee>,int> *root;
         if(CompanyID<0)
         {
+            if(this->num_of_employees==0)
+            {
+                return FAILURE;
+            }
             root=this->employees.root;
         }
         else
@@ -498,7 +503,6 @@ StatusType Ehsan::Hitechs::GetAllEmployeesBySalary(int CompanyID, int **Employee
         {
             return FAILURE;
         }
-
 
         if(acquirerCompany->num_of_employee==0)
         {

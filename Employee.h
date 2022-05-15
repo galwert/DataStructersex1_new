@@ -46,7 +46,6 @@ namespace Ehsan {
         {
             return (!( (*this) > other));
         }
-        friend std::ostream& operator<<(std::ostream& os, const IDSalary& IDSalary);
     };
 
     class Employee {
